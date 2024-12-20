@@ -24,6 +24,7 @@ namespace VideoScreenSaver
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
+            mediaElement.IsMuted = true;
             //_initialMousePosition = Mouse.GetPosition(this);
         }
 
