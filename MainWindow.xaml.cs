@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,7 +19,9 @@ namespace VideoScreenSaver
         private DispatcherTimer _timer;
         private DispatcherTimer _delayTimer;
         private int _currentVideoIndex = 0;
-        private List<string> _videoPaths;
+        //private List<string> _videoPaths;
+        private string _videoPaths;
+        public static List<MediaConfig> mediaConfigs = new List<MediaConfig>();
 
         private Process ffplayProcess;
 
@@ -39,38 +42,31 @@ namespace VideoScreenSaver
             if (File.Exists(jsonFilePath))
             {
                 string jsonString = File.ReadAllText(jsonFilePath);
-                FilePaths filePaths = JsonSerializer.Deserialize<FilePaths>(jsonString);
-                _videoPaths = filePaths.Videos;
+                mediaConfigs = JsonSerializer.Deserialize<List<MediaConfig>>(jsonString);
+                //MediaConfig filePaths = JsonSerializer.Deserialize<MediaConfig>(jsonString);
 
-                // Log the loaded video paths
-                Console.WriteLine("Loaded video paths:");
-                foreach (var path in _videoPaths)
-                {
-                    Console.WriteLine(path);
-                }
+                if (mediaConfigs.Count > 0)
+                    {
+                        // Set up the main timer
+                        _timer = new DispatcherTimer();
+                        _timer.Interval = TimeSpan.FromMinutes(mediaConfigs[_currentVideoIndex].Delay); // 10 minutes interval
+                        _timer.Tick += Timer_Tick;
+                        _timer.Start();
 
-                if (_videoPaths.Count > 0)
-                {
-                    // Set up the main timer
-                    _timer = new DispatcherTimer();
-                    _timer.Interval = TimeSpan.FromMinutes(10); // 10 minutes interval
-                    _timer.Tick += Timer_Tick;
-                    _timer.Start();
+                        // Set up the delay timer for mouse and keyboard detection
+                        _delayTimer = new DispatcherTimer();
+                        _delayTimer.Interval = TimeSpan.FromSeconds(2); // 2 seconds delay
+                        _delayTimer.Tick += DelayTimer_Tick;
+                        _delayTimer.Start();
 
-                    // Set up the delay timer for mouse and keyboard detection
-                    _delayTimer = new DispatcherTimer();
-                    _delayTimer.Interval = TimeSpan.FromSeconds(2); // 2 seconds delay
-                    _delayTimer.Tick += DelayTimer_Tick;
-                    _delayTimer.Start();
-
-                    // Start playing the first video
-                    PlayNextVideo();
-                }
-                else
-                {
-                    MessageBox.Show("No videos found in JSON file.");
-                    Application.Current.Shutdown();
-                }
+                        // Start playing the first video
+                        PlayNextVideo();
+                    }
+                    else
+                    {
+                        MessageBox.Show("No videos found in JSON file.");
+                        Application.Current.Shutdown();
+                    }
             }
             else
             {
@@ -91,12 +87,17 @@ namespace VideoScreenSaver
 
         private void PlayNextVideo()
         {
-            if (_currentVideoIndex >= _videoPaths.Count)
+            if (_currentVideoIndex >= mediaConfigs.Count)
             {
                 _currentVideoIndex = 0;
             }
 
-            string videoPath = _videoPaths[_currentVideoIndex];
+            string videoPath = mediaConfigs[_currentVideoIndex].Videos;
+
+            if (mediaConfigs[_currentVideoIndex].Sound == 1)
+                mediaElement.IsMuted = false;
+            else
+                mediaElement.IsMuted = true;
 
             Console.WriteLine("Playing video: " + videoPath);
 
@@ -157,7 +158,8 @@ namespace VideoScreenSaver
         }
         private void Window_MouseMove(object sender, MouseEventArgs e)
         {
-            if (_mousePosition != default && (_mousePosition != Mouse.GetPosition(this))) {
+            if (_mousePosition != default && (_mousePosition != Mouse.GetPosition(this)))
+            {
 
                 Application.Current.Shutdown();
                 // Stop the video playback this.Close();
@@ -184,5 +186,17 @@ namespace VideoScreenSaver
     public class FilePaths
     {
         public List<string> Videos { get; set; }
+    }
+
+    public class MediaConfig
+    {
+        [JsonPropertyName("videos")]
+        public string Videos { get; set; }
+
+        [JsonPropertyName("sound")]
+        public int Sound { get; set; }
+
+        [JsonPropertyName("delay")]
+        public int Delay { get; set; } // Delay in seconds
     }
 }
