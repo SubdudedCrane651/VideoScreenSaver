@@ -138,7 +138,7 @@ namespace VideoScreenSaver
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
                     FileName = "ffplay",
-                    Arguments = $"-autoexit -loop 0 -volume 0 \"{tempFile}\"",
+                    Arguments = $"-vf \"scale=1980:1080\" -autoexit -loop 0 -volume 0 \"{tempFile}\"",
                     UseShellExecute = false,
                     //RedirectStandardOutput = true,
                     CreateNoWindow = true
