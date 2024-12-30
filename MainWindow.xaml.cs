@@ -89,7 +89,7 @@ namespace VideoScreenSaver
             this.KeyDown += Window_KeyDown;
         }
 
-        private async void PlayNextVideo()
+        private void PlayNextVideo()
         {
             if (_currentVideoIndex >= _videoPaths.Count)
             {
@@ -102,11 +102,11 @@ namespace VideoScreenSaver
 
             if (File.Exists(videoPath))
             {
-                //mediaElement.Source = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, videoPath), UriKind.Absolute);
-                //mediaElement.Play();
+                mediaElement.Source = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, videoPath), UriKind.Absolute);
+                mediaElement.Play();
 
                 //Using FFMEG
-                await PlayVideoFromMemoryAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, videoPath));
+                //await PlayVideoFromMemoryAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, videoPath));
             }
             else
             {
@@ -169,9 +169,9 @@ namespace VideoScreenSaver
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Console.WriteLine("Mouse button pressed, exiting screensaver.");
-            //Application.Current.Shutdown();
-            ffplayProcess?.Kill();
-            this.Close();
+            Application.Current.Shutdown();
+            //ffplayProcess?.Kill();
+            //this.Close();
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
