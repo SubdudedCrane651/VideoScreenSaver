@@ -49,7 +49,8 @@ namespace VideoScreenSaver
                     {
                         // Set up the main timer
                         _timer = new DispatcherTimer();
-                        _timer.Interval = TimeSpan.FromMinutes(mediaConfigs[_currentVideoIndex].Delay); // 10 minutes interval
+                        _timer.Interval = TimeSpan.FromMinutes(mediaConfigs[_currentVideoIndex].Delay);
+                        //Amount of delay in minutes interval
                         _timer.Tick += Timer_Tick;
                         _timer.Start();
 
@@ -120,6 +121,12 @@ namespace VideoScreenSaver
 
         private void Timer_Tick(object sender, EventArgs e)
         {
+            _timer.Interval = TimeSpan.FromMinutes(mediaConfigs[_currentVideoIndex].Delay);
+            // Amount of delay in minutes interval
+            _timer.Tick += Timer_Tick;
+            _timer.Stop();  
+            _timer.Start();
+
             PlayNextVideo();
         }
 
