@@ -8,4 +8,14 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="FFME.Windows" Version="4.4.350" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ffme.win">
+      <HintPath>..\..\..\..\.nuget\packages\ffme.windows\4.4.350\lib\net5.0-windows7.0\ffme.win.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

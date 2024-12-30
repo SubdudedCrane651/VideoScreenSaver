@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
@@ -19,6 +20,7 @@ namespace VideoScreenSaver
         private int _currentVideoIndex = 0;
         private List<string> _videoPaths;
 
+        private Process ffplayProcess;
 
         public MainWindow()
         {
@@ -87,7 +89,7 @@ namespace VideoScreenSaver
             this.KeyDown += Window_KeyDown;
         }
 
-        private void PlayNextVideo()
+        private async void PlayNextVideo()
         {
             if (_currentVideoIndex >= _videoPaths.Count)
             {
@@ -95,12 +97,16 @@ namespace VideoScreenSaver
             }
 
             string videoPath = _videoPaths[_currentVideoIndex];
+
             Console.WriteLine("Playing video: " + videoPath);
 
             if (File.Exists(videoPath))
             {
-                mediaElement.Source = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, videoPath), UriKind.Absolute);
-                mediaElement.Play();
+                //mediaElement.Source = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, videoPath), UriKind.Absolute);
+                //mediaElement.Play();
+
+                //Using FFMEG
+                await PlayVideoFromMemoryAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, videoPath));
             }
             else
             {
@@ -116,33 +122,56 @@ namespace VideoScreenSaver
             PlayNextVideo();
         }
 
+        private async Task PlayVideoFromMemoryAsync(string VideoPath)
+        {
+            // Load MP4 file into memory
+            byte[] videoBytes = File.ReadAllBytes(VideoPath);
+
+            // Create a MemoryStream
+            using (MemoryStream videoStream = new MemoryStream(videoBytes))
+            {
+                // Save the stream to a temporary file
+                string tempFile = Path.GetTempFileName();
+                File.WriteAllBytes(tempFile, videoStream.ToArray());
+
+                // Use FFmpeg to play the video
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = "ffplay",
+                    Arguments = $"-autoexit -loop 0 -volume 0 \"{tempFile}\"",
+                    UseShellExecute = false,
+                    //RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                };
+
+                ffplayProcess = new Process { StartInfo = startInfo };
+                ffplayProcess.Start(); await Task.Run(() => ffplayProcess.WaitForExit());
+            }
+        }
+
         private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
         {
             // Loop the current video until the timer ticks
             mediaElement.Position = TimeSpan.Zero;
             mediaElement.Play();
         }
-        //private void Window_MouseMove(object sender, MouseEventArgs e)
-        //{ 
-        //    if (_isInitialMouseMovementIgnored) return;
-
-        //    Point currentMousePosition = Mouse.GetPosition(this);
-        //    if (Math.Abs(currentMousePosition.X - _initialMousePosition.X) > 50 || Math.Abs(currentMousePosition.Y - _initialMousePosition.Y) > 50)
-        //    { Console.WriteLine("Mouse moved, exiting screensaver.");
-        //        Application.Current.Shutdown(); 
-        //    }
-        //}
-
         private void Window_MouseMove(object sender, MouseEventArgs e)
         {
-            if (_mousePosition != default && (_mousePosition != Mouse.GetPosition(this))) { Application.Current.Shutdown(); }
+            if (_mousePosition != default && (_mousePosition != Mouse.GetPosition(this))) {
+
+                Application.Current.Shutdown();
+                // Stop the video playback this.Close();
+
+            }
             _mousePosition = Mouse.GetPosition(this);
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Console.WriteLine("Mouse button pressed, exiting screensaver.");
-            Application.Current.Shutdown();
+            //Application.Current.Shutdown();
+            ffplayProcess?.Kill();
+            this.Close();
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
