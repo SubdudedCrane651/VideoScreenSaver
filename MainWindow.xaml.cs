@@ -121,6 +121,11 @@ namespace VideoScreenSaver
 
         private void Timer_Tick(object sender, EventArgs e)
         {
+            if (_currentVideoIndex >= mediaConfigs.Count)
+            {
+                _currentVideoIndex = 0;
+            }
+
             _timer.Interval = TimeSpan.FromMinutes(mediaConfigs[_currentVideoIndex].Delay);
             // Amount of delay in minutes interval
             _timer.Tick += Timer_Tick;
