@@ -197,6 +197,14 @@ namespace VideoScreenSaver
 
     public class MediaConfig
     {
+    //[
+    // {
+    //  "videos": "Formula1_1.mp4",
+    //  "sound": 1,
+    //  "delay": 10
+    // }
+    //]
+ 
         [JsonPropertyName("videos")]
         public string Videos { get; set; }
 
