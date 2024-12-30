@@ -128,7 +128,7 @@ namespace VideoScreenSaver
 
             _timer.Interval = TimeSpan.FromMinutes(mediaConfigs[_currentVideoIndex].Delay);
             // Amount of delay in minutes interval
-            _timer.Tick += Timer_Tick;
+            _timer.Stop();
             _timer.Start();
 
             PlayNextVideo();
