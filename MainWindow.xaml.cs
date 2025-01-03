@@ -100,11 +100,16 @@ namespace VideoScreenSaver
             else
                 mediaElement.IsMuted = true;
 
+            if (videoPath.IndexOf(":") != -1)
+                videoPath = videoPath;
+            else
+                videoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, videoPath);
+
             Console.WriteLine("Playing video: " + videoPath);
 
             if (File.Exists(videoPath))
             {
-                mediaElement.Source = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, videoPath), UriKind.Absolute);
+                mediaElement.Source = new Uri(videoPath, UriKind.Absolute);
                 mediaElement.Play();
 
                 //Using FFMEG
