@@ -7,7 +7,7 @@
         KeyDown="Window_KeyDown" 
         MouseMove="Window_MouseMove" 
         MouseDown="Window_MouseDown">
-    <Grid>
+    <Grid Background="Black">
         <Image x:Name="gifImage"
        Stretch="UniformToFill"
        HorizontalAlignment="Stretch"

@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using WpfAnimatedGif;
@@ -137,6 +138,9 @@ namespace VideoScreenSaver
             gifImage.Visibility = Visibility.Visible;
             mediaElement.Visibility = Visibility.Collapsed;
 
+            var config = mediaConfigs[_currentVideoIndex];
+            double scale = config.Size / 100.0;
+
             var image = new BitmapImage();
             image.BeginInit();
             image.UriSource = new Uri(gifPath, UriKind.Absolute);
@@ -146,14 +150,19 @@ namespace VideoScreenSaver
             ImageBehavior.SetAnimatedSource(gifImage, image);
             ImageBehavior.SetRepeatBehavior(gifImage, System.Windows.Media.Animation.RepeatBehavior.Forever);
             ImageBehavior.SetAutoStart(gifImage, true);
-            //ImageBehavior.SetStretch(gifImage, System.Windows.Media.Stretch.UniformToFill);
+            //ImageBehavior.SetStretch(gifImage, System.Windows.Media.Stretch.Uniform);
             // Remove or comment out the following line, as ImageBehavior does not have a SetStretch method:
-            // ImageBehavior.SetStretch(gifImage, System.Windows.Media.Stretch.UniformToFill);
+            // ImageBehavior.SetStretch(gifImage, System.Windows.Media.Stretch.Uniform);
 
             // Instead, set the Stretch property directly on the gifImage control:
-            gifImage.Stretch = System.Windows.Media.Stretch.UniformToFill;
-        }
+            gifImage.Stretch = System.Windows.Media.Stretch.Uniform;
 
+            // Apply scaling transform
+            gifImage.RenderTransform = new ScaleTransform(scale, scale);
+            gifImage.RenderTransformOrigin = new Point(0.5, 0.5); // center it
+        }
+        
+       
 
         private void Timer_Tick(object sender, EventArgs e)
         {
@@ -253,5 +262,8 @@ namespace VideoScreenSaver
 
         [JsonPropertyName("delay")]
         public int Delay { get; set; } // Delay in seconds
+
+        [JsonPropertyName("size")]
+        public int Size { get; set; } = 100; // default to 100%
     }
 }
