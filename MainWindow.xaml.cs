@@ -33,8 +33,20 @@ namespace VideoScreenSaver
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
+            Activated += MainWindow_Activated;
             mediaElement.IsMuted = true;
             //_initialMousePosition = Mouse.GetPosition(this);
+        }
+
+        private void MainWindow_Activated(object sender, EventArgs e)
+        {
+            if (gifImage.Source != null)
+            {
+                // Force restart of GIF animation
+                var src = gifImage.Source;
+                gifImage.Source = null;
+                gifImage.Source = src;
+            }
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
