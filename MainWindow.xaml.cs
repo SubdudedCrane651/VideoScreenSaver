@@ -7,7 +7,10 @@ using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using WpfAnimatedGif;
+
 
 namespace VideoScreenSaver
 {
@@ -89,40 +92,68 @@ namespace VideoScreenSaver
         private void PlayNextVideo()
         {
             if (_currentVideoIndex >= mediaConfigs.Count)
-            {
                 _currentVideoIndex = 0;
-            }
 
-            string videoPath = mediaConfigs[_currentVideoIndex].Videos;
+            string path = mediaConfigs[_currentVideoIndex].Videos;
 
-            if (mediaConfigs[_currentVideoIndex].Sound == 1)
-                mediaElement.IsMuted = false;
-            else
-                mediaElement.IsMuted = true;
+            if (!Path.IsPathRooted(path))
+                path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
 
-            if (videoPath.IndexOf(":") != -1)
-                videoPath = videoPath;
-            else
-                videoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, videoPath);
+            Console.WriteLine("Loading media: " + path);
 
-            Console.WriteLine("Playing video: " + videoPath);
-
-            if (File.Exists(videoPath))
+            if (!File.Exists(path))
             {
-                mediaElement.Source = new Uri(videoPath, UriKind.Absolute);
-                mediaElement.Play();
-
-                //Using FFMEG
-                //await PlayVideoFromMemoryAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, videoPath));
-            }
-            else
-            {
-                MessageBox.Show("Video file not found: " + videoPath);
+                MessageBox.Show("Media file not found: " + path);
                 Application.Current.Shutdown();
+                return;
+            }
+
+            string ext = Path.GetExtension(path).ToLower();
+
+            if (ext == ".gif")
+            {
+                PlayGif(path);
+            }
+            else
+            {
+                PlayVideo(path);
             }
 
             _currentVideoIndex++;
         }
+
+        private void PlayVideo(string videoPath)
+        {
+            gifImage.Visibility = Visibility.Collapsed;
+            mediaElement.Visibility = Visibility.Visible;
+
+            mediaElement.IsMuted = mediaConfigs[_currentVideoIndex].Sound == 0;
+            mediaElement.Source = new Uri(videoPath, UriKind.Absolute);
+            mediaElement.Play();
+        }
+
+        private void PlayGif(string gifPath)
+        {
+            gifImage.Visibility = Visibility.Visible;
+            mediaElement.Visibility = Visibility.Collapsed;
+
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.UriSource = new Uri(gifPath, UriKind.Absolute);
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.EndInit();
+
+            ImageBehavior.SetAnimatedSource(gifImage, image);
+            ImageBehavior.SetRepeatBehavior(gifImage, System.Windows.Media.Animation.RepeatBehavior.Forever);
+            ImageBehavior.SetAutoStart(gifImage, true);
+            //ImageBehavior.SetStretch(gifImage, System.Windows.Media.Stretch.UniformToFill);
+            // Remove or comment out the following line, as ImageBehavior does not have a SetStretch method:
+            // ImageBehavior.SetStretch(gifImage, System.Windows.Media.Stretch.UniformToFill);
+
+            // Instead, set the Stretch property directly on the gifImage control:
+            gifImage.Stretch = System.Windows.Media.Stretch.UniformToFill;
+        }
+
 
         private void Timer_Tick(object sender, EventArgs e)
         {

@@ -8,6 +8,12 @@
         MouseMove="Window_MouseMove" 
         MouseDown="Window_MouseDown">
     <Grid>
+        <Image x:Name="gifImage"
+       Stretch="UniformToFill"
+       HorizontalAlignment="Stretch"
+       VerticalAlignment="Stretch"
+       Visibility="Collapsed"/>
+        
         <MediaElement Name="mediaElement" 
                       LoadedBehavior="Manual" 
                       MediaEnded="MediaElement_MediaEnded" 
